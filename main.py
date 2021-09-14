@@ -1,7 +1,8 @@
 import math
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy import interpolate
+import random
 
 plt.rcParams.update({
 	"lines.color": "white",
@@ -16,27 +17,25 @@ plt.rcParams.update({
 	"figure.facecolor": "black",
 	"figure.edgecolor": "black",
 	"savefig.facecolor": "black",
-	"savefig.edgecolor": "black"
+	"savefig.edgecolor": "black",
 })
 
 
 
 CGRAV = 6.67408 * math.pow(10,-11)
 PARTMASS = 2
-m1pos = m1x, m1y, m1z = (0, 0, 0)
-m2pos = m2x, m2y, m2z = (100, 200, 30)
 
 
 
 
 
-class Particle(object):
+class Particle:
 	def __init__(self, mass, x, y, z):
 		self.mass = mass
 		self.pos = self.x, self.y, self.z = (x, y, z)
 		self.timeDelay = 0.1
 		self.pos = np.array(self.pos)
-	
+
 	def pForce(self, collider):
 		return ((CGRAV)*(self.mass**2))/((self.pos-collider.pos)**2)
 
@@ -57,7 +56,6 @@ class Particle(object):
 		tupOut2 = [math.acos(x) for x in tupOut]
 		tupOut = [math.degrees(x) for x in tupOut2]
 		for x in tupOut:
-			#print("Apply A Force of {0} in the {1} direction".format(x,["X","Y","Z"][tupOut.index(x)]))
 			pass
 		return tupOut
 
@@ -66,22 +64,19 @@ class Particle(object):
 		distances = np.array(distances)
 		m1Forces = m1Fx, m1Fy, m1Fz = self.pForce(collider)
 		m1Forces = np.array(m1Forces)
-		theta = math.atan(m1Fy/m1Fx)
-		forceXYZ = math.sqrt(sum(distances*distances))
-		#print(self.vectorAngle(collider))
+		math.atan(m1Fy/m1Fx)
+		math.sqrt(sum(distances*distances))
 
 	def move(self, collider):
 		td = 1
 		res = self.vectorAngle(collider)
-		#print(res)
+
 		self.x += td * res[0]
 		self.y += td * res[1]
 		self.z += td * res[2]
+
 		self.pos = np.array([self.x,self.y,self.z])
-		#print("\n")
 		return res + [self.x,self.y,self.z]
-
-
 
 def smooth(mx,mn,xl,yl,axL,c="blue"):
 	x_new = np.linspace(mn, mx, 1000)
@@ -100,69 +95,127 @@ def mapAppend(lofLists,lst):
 		lofLists[x].append(lst[x])
 	return lofLists
 
-def graph(m1,m2,m3,m4,ITERATIONS=10,masses=[],outfile="out.png"):
-	xl = []
-	yl1, yl2, yl3, yl4, yl5, yl6 = [[] for x in range(6)]
-	yl11, yl12, yl13, yl14, yl15, yl16 = [[] for x in range(6)]
-	yl21, yl22, yl23, yl24, yl25, yl26 = [[] for x in range(6)]
-	yl31, yl32, yl33, yl34, yl35, yl36 = [[] for x in range(6)]
-	MASSES = [m1,m2,m3,m4]
-	for x in range(ITERATIONS):
-			xl.append(x)
+def generateMassTemplate(stage,lst=None,MASS=None,temp=None):
+	TEMPLATE = {
+		"NET":{
+			"X": [],
+			"Y": [],
+			"Z": []
+		},
+		"POS": {
+			"X": [],
+			"Y": [],
+			"Z": []
+		},
+		"MASS": "placeholder"
+	}
+	if temp != None: TEMPLATE = temp
 
-			res = calcMasses(m1,MASSES)
-			b = calcMasses(m2,MASSES)
-			c = calcMasses(m3,MASSES)
-			d = calcMasses(m4,MASSES)
+	if stage == "GEN":
+		TEMPLATE["MASS"] = MASS
+	elif stage == "APP":
+		TEMPLATE["NET"]["X"].append(lst[0])
+		TEMPLATE["NET"]["Y"].append(lst[1])
+		TEMPLATE["NET"]["Z"].append(lst[2])
 
-			yl1, yl2, yl3, yl4, yl5, yl6 = mapAppend([yl1, yl2, yl3, yl4, yl5, yl6], res)
+		TEMPLATE["POS"]["X"].append(lst[3])
+		TEMPLATE["POS"]["Y"].append(lst[4])
+		TEMPLATE["POS"]["Z"].append(lst[5])
 
-			yl11, yl12, yl13, yl14, yl15, yl16 = mapAppend([yl11, yl12, yl13, yl14, yl15, yl16], b)
+	return TEMPLATE
 
-			yl21, yl22, yl23, yl24, yl25, yl26 = mapAppend([yl21, yl22, yl23, yl24, yl25, yl26], c)
-
-			yl31, yl32, yl33, yl34, yl35, yl36 = mapAppend([yl31, yl32, yl33, yl34, yl35, yl36], d)
+def generateColor(bounds=[0,255],amount=3,PLACES=2):
+	outlist = []
+	for x in range(amount):
+		outlist.append(random.randrange(bounds[0],bounds[1]))
 	
+	return tuple(list(map(lambda x: round(x/bounds[1],PLACES), outlist)))
+
+def graph(AMOUNTOFMASSES=30,ITERATIONS=10,masses=[],outfile="out.png"):
+	xl = []
+
+	MASSES = []
+	RANDOMRANGE = rLimX, rLimY = [0, 10000]
+	for massCreator in range(AMOUNTOFMASSES):
+		MASSES.append(
+			Particle(
+				PARTMASS,
+				random.randrange(rLimX,rLimY),
+				random.randrange(rLimX,rLimY),
+				random.randrange(rLimX,rLimY)
+			)
+		)
+
+	
+	
+	MASSDICTIONARY = []
+
+	for mass in MASSES:
+		MASSDICTIONARY.append(generateMassTemplate("GEN", MASS=mass))
+
+
+	# 1: Fx, 2: Fy, 3: Fz, 4: Xpos, 5: YPos, 6: Zpos
+
+	for x in range(ITERATIONS):
+		xl.append(x)
+		for massIter in range(AMOUNTOFMASSES):
+			lstVal = calcMasses(MASSDICTIONARY[massIter]["MASS"],MASSES)
+			MASSDICTIONARY[massIter] = generateMassTemplate(
+				"APP",
+				lst=lstVal,
+				temp=MASSDICTIONARY[massIter],
+			)
+
 	print("Finished Calculating Masses")
 
 	fig, ((ax1,ax2,ax3),(ax4,ax5,ax6)) = plt.subplots(2,3,figsize=(30,20))
 
-	COLORS = ["red", "black", "blue", "orange"]
+
+	COLORS = [generateColor(amount=3) for x in range(AMOUNTOFMASSES)]
 	LABELS = ["F_net(X)","F_net(Y)","F_net(Z)"]
-	PARTS = [yl1,yl11,yl21,yl31]
+	PARTS = [x["NET"] for x in MASSDICTIONARY]
 	AXES = [ax1,ax2,ax3]
 
-	TDPLOTAXES = [
-		[np.array(yl4), np.array(yl5), np.array(yl6),"red"],
-		[np.array(yl14),np.array(yl15),np.array(yl16),"black"],
-		[np.array(yl24),np.array(yl25),np.array(yl26),"blue"],
-		[np.array(yl34),np.array(yl35),np.array(yl36),"orange"]
-	]
+	TDPLOTAXES = []
+	for g in range(AMOUNTOFMASSES):
+		dct = MASSDICTIONARY[g]["POS"]
+		TDPLOTAXES.append([
+			np.array(dct["X"]),
+			np.array(dct["Y"]),
+			np.array(dct["Z"]),
+			COLORS[g]
+		])
 
 	for ax in range(len(AXES)):
 		for g in range(len(PARTS)):
-			smooth(0,ITERATIONS,xl,PARTS[g],AXES[ax],c=COLORS[g])
+			graphAxis = ["X","Y","Z"][ax]
+			smooth(
+				0,
+				ITERATIONS,
+				xl,
+				PARTS[g][graphAxis],
+				AXES[ax],
+				c=COLORS[g]
+			)
 		AXES[ax].set_xlabel(LABELS[ax], color="w")
 
-	ax4 = plt.subplot(212,projection ='3d')
+	ax4 = plt.subplot(212, projection="3d")
 
 	for aXval, aYval, aZval, color in TDPLOTAXES:
 		ax4.plot3D(
 			aXval,
 			aYval,
 			aZval,
-			c=color
+			c=color,
 		)
+	for x in MASSES:
+		ax4.scatter3D(x.x,x.y,x.z,color=COLORS[MASSES.index(x)])
 
-	ax4.scatter3D(m1.x,m1.y,m1.z,color="red")
-	ax4.scatter3D(m2.x,m2.y,m2.z,color="black")
-	ax4.scatter3D(m3.x,m3.y,m3.z,color="blue")
-	ax4.scatter3D(m4.x,m4.y,m4.z,color="orange")
+	
+	ax4.set_xlabel("$X$", fontsize=20, color="black")
+	ax4.set_ylabel("$Y$", fontsize=20, color="black")
+	ax4.yaxis._axinfo["label"]["space_factor"] = 10.0
 
-	ax4.set_xlabel('$X$', fontsize=20, color="black")
-	ax4.set_ylabel('$Y$', fontsize=20, color="black")
-
-	ax4.yaxis._axinfo['label']['space_factor'] = 10.0
 	print("Finished Graphing Masses")
 
 	ticks = xticks, yticks, zticks = [ax4.xaxis.get_major_ticks(),ax4.yaxis.get_major_ticks(),ax4.zaxis.get_major_ticks()]
@@ -181,32 +234,9 @@ def graph(m1,m2,m3,m4,ITERATIONS=10,masses=[],outfile="out.png"):
 
 	plt.savefig(outfile)
 
-def run(part1, part2, part3, part4, ITERMAX=20):
-	graph(part1,part2,part3, part4, outfile="out1-2A.png",ITERATIONS=ITERMAX)
-
-def mult():
-	p1 = Particle(PARTMASS, 0, 0, 0)
-	p2 = Particle(PARTMASS, 10, 20, 30)
-	p3 = Particle(PARTMASS, 2000, 3000, 800)
-	p4 = Particle(PARTMASS, 200, 150, 400)
-	#graph(p1,p2,outfile="out1-2.png")
-	#graph(p3,p4,outfile="out3-4.png",ITERATIONS=40)
-	m1L, m2L, m3L, m4L = [[],[],[],[]]
-	MASSES = [p1,p2,p3,p4]
-	for x in range(25):
-		res = calcMasses(p1,MASSES)
-		b = calcMasses(p2,MASSES)
-		c = calcMasses(p3,MASSES)
-		d = calcMasses(p4,MASSES)
-		m1L.append(res[0])
-		m2L.append(b[0])
-		m3L.append(c[0])
-		m4L.append(d[0])
-	#run(p1,p2,p3,p4)
-	print(m1L,m2L,m3L,m4L,sep="\n\n\n")
-	smooth(0,25,range(25),m1L,plt,c="blue")
-	#plt.scatter(range(100),m1L)
-	plt.savefig("out.png")
+def run(ITERMAX=20):
+	graph(outfile="out1-2A.png", ITERATIONS=ITERMAX)
 	print("Done")
 
-mult()
+
+run()
