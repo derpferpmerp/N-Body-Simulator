@@ -234,7 +234,7 @@ def graph(AMOUNTOFMASSES=50,ITERATIONS=10,PARTMASS=PARTMASS,outfile="out.png"):
 	print("Finished Graph-Image Processing")
 
 	#plt.savefig(outfile)
-	plt.show()
+	plt.show(block=False)
 
 def run(ITERMAX=20,AMOUNTOFMASSES=50,pMass=2):
 	graph(outfile="out1-2A.png", ITERATIONS=ITERMAX, AMOUNTOFMASSES=AMOUNTOFMASSES,PARTMASS=pMass)
