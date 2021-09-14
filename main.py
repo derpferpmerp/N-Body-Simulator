@@ -247,7 +247,7 @@ layout = [
 			(5, 100),
 			10,
 			1,
-			orientation="w",
+			orientation="h",
 			size=(20, 15),
 			key="-PARTICLE SLIDER-",
 			enable_events=True
@@ -259,7 +259,7 @@ layout = [
 			(1, 100),
 			2,
 			1,
-			orientation="w",
+			orientation="h",
 			size=(20, 15),
 			key="-MASS SLIDER-",
 			enable_events=True
@@ -271,7 +271,7 @@ layout = [
 			(1, 100),
 			10,
 			1,
-			orientation="w",
+			orientation="h",
 			size=(20, 15),
 			key="-ITER SLIDER-",
 			enable_events=True
@@ -288,11 +288,15 @@ while True:
 	if event == 'Exit':
 		break
 	elif event == "Generate Simulation":
-		if not hasclickedbutton and currentbutton == None:
-			pass
-		else:
-			amtParts, massParts, iterations = [values["-PARTICLE SLIDER-"], values["-MASS SLIDER-"], values["-ITER SLIDER-"]]
-			run(ITERMAX=iterations,AMOUNTOFMASSES=amtParts,pMass=massParts)
+		amtParts, massParts, iterations = [values["-PARTICLE SLIDER-"], values["-MASS SLIDER-"], values["-ITER SLIDER-"]]
+		amtParts = round(amtParts)
+		massParts = round(massParts)
+		iterations= round(iterations)
+		run(
+			ITERMAX=iterations,
+			AMOUNTOFMASSES=amtParts,
+			pMass=massParts
+		)
 
 window.close()
 run()
