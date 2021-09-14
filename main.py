@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
 import random
+import PySimpleGUI as sg
 
 plt.rcParams.update({
 	"lines.color": "white",
@@ -131,7 +132,7 @@ def generateColor(bounds=[0,255],amount=3,PLACES=2):
 	
 	return tuple(list(map(lambda x: round(x/bounds[1],PLACES), outlist)))
 
-def graph(AMOUNTOFMASSES=30,ITERATIONS=10,masses=[],outfile="out.png"):
+def graph(AMOUNTOFMASSES=50,ITERATIONS=10,PARTMASS=PARTMASS,outfile="out.png"):
 	xl = []
 
 	MASSES = []
@@ -232,11 +233,66 @@ def graph(AMOUNTOFMASSES=30,ITERATIONS=10,masses=[],outfile="out.png"):
 	plt.tight_layout()
 	print("Finished Graph-Image Processing")
 
-	plt.savefig(outfile)
+	#plt.savefig(outfile)
+	plt.show()
 
-def run(ITERMAX=20):
-	graph(outfile="out1-2A.png", ITERATIONS=ITERMAX)
+def run(ITERMAX=20,AMOUNTOFMASSES=50,pMass=2):
+	graph(outfile="out1-2A.png", ITERATIONS=ITERMAX, AMOUNTOFMASSES=AMOUNTOFMASSES,PARTMASS=pMass)
 	print("Done")
 
+layout = [
+	[
+		sg.Text('Amount of Particles: ', size=(20, 1)),
+		sg.Slider(
+			(5, 100),
+			10,
+			1,
+			orientation="w",
+			size=(20, 15),
+			key="-PARTICLE SLIDER-",
+			enable_events=True
+		)
+	],
+	[
+		sg.Text('Mass of Particles', size=(20, 1)),
+		sg.Slider(
+			(1, 100),
+			2,
+			1,
+			orientation="w",
+			size=(20, 15),
+			key="-MASS SLIDER-",
+			enable_events=True
+		)
+	],
+	[
+		sg.Text('Amount of Iterations', size=(20, 1)),
+		sg.Slider(
+			(1, 100),
+			10,
+			1,
+			orientation="w",
+			size=(20, 15),
+			key="-ITER SLIDER-",
+			enable_events=True
+		)
+	],
+	[sg.Button("Generate Simulation")]
+]
+window = sg.Window(title="N-Body-Simulator", layout=layout, margins=(100, 50))
+currentbutton = None
+hasclickedbutton = False
 
+while True:
+	event, values = window.read()
+	if event == 'Exit':
+		break
+	elif event == "Generate Simulation":
+		if not hasclickedbutton and currentbutton == None:
+			pass
+		else:
+			amtParts, massParts, iterations = [values["-PARTICLE SLIDER-"], values["-MASS SLIDER-"], values["-ITER SLIDER-"]]
+			run(ITERMAX=iterations,AMOUNTOFMASSES=amtParts,pMass=massParts)
+
+window.close()
 run()
