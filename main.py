@@ -21,7 +21,7 @@ plt.rcParams.update({
 	"savefig.edgecolor": "black",
 })
 
-
+sg.theme('DarkTeal12')
 
 CGRAV = 6.67408 * math.pow(10,-11)
 PARTMASS = 2
@@ -138,6 +138,7 @@ def graph(AMOUNTOFMASSES=50,ITERATIONS=10,PARTMASS=PARTMASS,outfile="out.png"):
 	MASSES = []
 	RANDOMRANGE = rLimX, rLimY = [0, 10000]
 	for massCreator in range(AMOUNTOFMASSES):
+		sg.one_line_progress_meter('Loading', massCreator+1, AMOUNTOFMASSES, 'key', 'Creating Particles')
 		MASSES.append(
 			Particle(
 				PARTMASS,
@@ -158,6 +159,7 @@ def graph(AMOUNTOFMASSES=50,ITERATIONS=10,PARTMASS=PARTMASS,outfile="out.png"):
 	# 1: Fx, 2: Fy, 3: Fz, 4: Xpos, 5: YPos, 6: Zpos
 
 	for x in range(ITERATIONS):
+		sg.one_line_progress_meter('Loading', x+1, ITERATIONS, 'key', 'Creating Graph')
 		xl.append(x)
 		for massIter in range(AMOUNTOFMASSES):
 			lstVal = calcMasses(MASSDICTIONARY[massIter]["MASS"],MASSES)
@@ -277,15 +279,21 @@ layout = [
 			enable_events=True
 		)
 	],
-	[sg.Button("Generate Simulation")]
+	[sg.Button("Generate Simulation")],
+	[sg.Button("Exit")]
 ]
-window = sg.Window(title="N-Body-Simulator", layout=layout, margins=(100, 50))
+window = sg.Window(
+	title="N-Body-Simulator",
+	layout=layout,
+	margins=(100, 50)
+)
 currentbutton = None
 hasclickedbutton = False
+matplotlibWindowOpen = False
 
 while True:
 	event, values = window.read()
-	if event == 'Exit':
+	if not matplotlibWindowOpen and event == sg.WIN_CLOSED:
 		break
 	elif event == "Generate Simulation":
 		amtParts, massParts, iterations = [values["-PARTICLE SLIDER-"], values["-MASS SLIDER-"], values["-ITER SLIDER-"]]
@@ -297,6 +305,8 @@ while True:
 			AMOUNTOFMASSES=amtParts,
 			pMass=massParts
 		)
+		matplotlibWindowOpen=True
+	elif matplotlibWindowOpen and event == sg.WIN_CLOSED:
+		matplotlibWindowOpen=False
 
 window.close()
-run()
